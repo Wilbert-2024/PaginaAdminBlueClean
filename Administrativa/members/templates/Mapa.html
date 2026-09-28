@@ -1,0 +1,768 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="referrer" content="strict-origin-when-cross-origin">
+
+	<title>Mapa | Alcaldía</title>
+
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+	<link rel="stylesheet" href="{% static 'css/menuNavegacion.css' %}">
+	<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+	<script src="{% static 'js/menuNavegacion.js' %}" defer></script>
+
+	<style>
+		:root {
+			--bg: #f3f6fb;
+			--card: #ffffff;
+			--text: #0f172a;
+			--muted: #64748b;
+			--primary: #2563eb;
+			--primary-dark: #1d4ed8;
+			--success: #10b981;
+			--border: rgba(15, 23, 42, 0.08);
+			--shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+			--radius-xl: 22px;
+			--radius-lg: 16px;
+			--radius-md: 12px;
+		}
+
+		body {
+			background: var(--bg);
+			font-family: 'Inter', sans-serif;
+		}
+
+		.content {
+			padding: 24px;
+		}
+
+		.topbar {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			margin-bottom: 18px;
+		}
+
+		.topbar h2 {
+			font-size: 32px;
+			font-weight: 800;
+			color: var(--text);
+			margin: 0;
+		}
+
+		.panel {
+			background: transparent;
+			padding: 0;
+			border: none;
+			box-shadow: none;
+		}
+
+		.map-page-card {
+			background: linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
+			border-radius: 24px;
+			padding: 18px;
+			box-shadow: var(--shadow);
+			border: 1px solid var(--border);
+		}
+
+		.map-header {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 12px;
+			margin-bottom: 16px;
+			flex-wrap: wrap;
+		}
+
+		.map-title-group {
+			display: flex;
+			flex-direction: column;
+			gap: 6px;
+		}
+
+		.map-title {
+			font-size: 22px;
+			font-weight: 800;
+			color: var(--text);
+			margin: 0;
+		}
+
+		.map-subtitle {
+			font-size: 14px;
+			color: var(--muted);
+			margin: 0;
+		}
+
+		.status-badge {
+			display: inline-flex;
+			align-items: center;
+			gap: 8px;
+			padding: 10px 14px;
+			border-radius: 999px;
+			background: rgba(16, 185, 129, 0.10);
+			color: #047857;
+			font-size: 13px;
+			font-weight: 700;
+			border: 1px solid rgba(16, 185, 129, 0.18);
+		}
+
+		.status-dot {
+			width: 10px;
+			height: 10px;
+			border-radius: 50%;
+			background: var(--success);
+			box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.18);
+		}
+
+		.map-wrapper {
+			position: relative;
+			border-radius: 22px;
+			overflow: hidden;
+			box-shadow: 0 8px 25px rgba(15, 23, 42, 0.08);
+			border: 1px solid rgba(255,255,255,0.6);
+		}
+
+		#map {
+			height: 560px;
+			width: 100%;
+			z-index: 1;
+		}
+
+		/* Panel flotante superior izquierdo */
+		.map-floating-card {
+			position: absolute;
+			top: 18px;
+			left: 18px;
+			z-index: 1000;
+			background: rgba(255, 255, 255, 0.92);
+			backdrop-filter: blur(10px);
+			-webkit-backdrop-filter: blur(10px);
+			border-radius: 18px;
+			padding: 14px 16px;
+			box-shadow: 0 12px 30px rgba(15, 23, 42, 0.14);
+			border: 1px solid rgba(255,255,255,0.65);
+			min-width: 220px;
+		}
+
+		.map-floating-card h4 {
+			margin: 0 0 6px 0;
+			font-size: 15px;
+			font-weight: 800;
+			color: var(--text);
+		}
+
+		.map-floating-card p {
+			margin: 0;
+			font-size: 13px;
+			color: var(--muted);
+			line-height: 1.5;
+		}
+
+		/* Botones de capas premium */
+		.layer-switcher {
+			position: absolute;
+			top: 18px;
+			right: 18px;
+			z-index: 1000;
+			display: flex;
+			gap: 8px;
+			background: rgba(255,255,255,0.90);
+			padding: 8px;
+			border-radius: 18px;
+			backdrop-filter: blur(12px);
+			-webkit-backdrop-filter: blur(12px);
+			box-shadow: 0 12px 30px rgba(15, 23, 42, 0.14);
+			border: 1px solid rgba(255,255,255,0.65);
+		}
+
+		.route-switcher {
+			position: absolute;
+			top: 82px;
+			right: 18px;
+			z-index: 1000;
+			display: flex;
+			gap: 8px;
+			flex-wrap: wrap;
+			justify-content: flex-end;
+			max-width: calc(100% - 36px);
+		}
+
+		.route-btn {
+			border: 1px solid rgba(255,255,255,0.8);
+			padding: 10px 14px;
+			border-radius: 12px;
+			background: rgba(255,255,255,0.92);
+			backdrop-filter: blur(10px);
+			-webkit-backdrop-filter: blur(10px);
+			color: var(--text);
+			font-size: 13px;
+			font-weight: 700;
+			cursor: pointer;
+			box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+			transition: all 0.25s ease;
+		}
+
+		.route-btn:hover {
+			background: #eff6ff;
+			color: var(--primary-dark);
+		}
+
+		.route-btn.active {
+			background: var(--primary);
+			color: #fff;
+			border-color: var(--primary);
+		}
+
+		.route-btn:disabled {
+			cursor: not-allowed;
+			opacity: 0.55;
+		}
+
+		.layer-btn {
+			border: none;
+			outline: none;
+			padding: 10px 14px;
+			border-radius: 12px;
+			background: transparent;
+			color: var(--text);
+			font-size: 13px;
+			font-weight: 700;
+			cursor: pointer;
+			transition: all 0.25s ease;
+			display: flex;
+			align-items: center;
+			gap: 8px;
+		}
+
+		.layer-btn i {
+			font-size: 14px;
+		}
+
+		.layer-btn:hover {
+			background: rgba(37, 99, 235, 0.08);
+			color: var(--primary-dark);
+		}
+
+		.layer-btn.active {
+			background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+			color: #fff;
+			box-shadow: 0 8px 20px rgba(37, 99, 235, 0.28);
+		}
+
+		/* Estilo de zoom Leaflet */
+		.leaflet-top.leaflet-left {
+			top: 90px;
+			left: 12px;
+		}
+
+		.leaflet-control-zoom {
+			border: none !important;
+			box-shadow: 0 10px 25px rgba(15, 23, 42, 0.14) !important;
+			border-radius: 16px !important;
+			overflow: hidden;
+		}
+
+		.leaflet-control-zoom a {
+			width: 42px !important;
+			height: 42px !important;
+			line-height: 42px !important;
+			font-size: 18px !important;
+			color: var(--text) !important;
+			border: none !important;
+		}
+
+		.leaflet-control-zoom a:hover {
+			background: #f8fafc !important;
+		}
+
+		.leaflet-bottom.leaflet-right {
+			margin-bottom: 10px;
+			margin-right: 10px;
+		}
+
+		.leaflet-control-attribution {
+			background: rgba(255, 255, 255, 0.85) !important;
+			backdrop-filter: blur(8px);
+			border-radius: 10px;
+			padding: 4px 8px !important;
+			font-size: 11px !important;
+		}
+
+		@media (max-width: 768px) {
+			.content {
+				padding: 14px;
+			}
+
+			.map-header {
+				flex-direction: column;
+				align-items: flex-start;
+			}
+
+			#map {
+				height: 500px;
+			}
+
+			.layer-switcher {
+				top: auto;
+				bottom: 18px;
+				right: 18px;
+				left: 18px;
+				justify-content: space-between;
+				flex-wrap: wrap;
+			}
+
+			.route-switcher {
+				top: auto;
+				bottom: 78px;
+				left: 18px;
+				right: 18px;
+				justify-content: center;
+			}
+
+			.map-floating-card {
+				top: 18px;
+				left: 18px;
+				right: 18px;
+				min-width: auto;
+			}
+		}
+	</style>
+</head>
+
+<body>
+	<div class="dashboard-shell">
+		{% include 'MenuNavegacion' %}
+
+		<main class="content">
+			<header class="topbar">
+				<h2>Mapa</h2>
+			</header>
+
+			<section class="panel">
+				<div class="map-page-card">
+
+					<div class="map-header">
+						<div class="map-title-group">
+							<h3 class="map-title">Monitoreo del camión recolector</h3>
+							<p class="map-subtitle">Visualiza la ubicación y cambia entre distintos tipos de mapa.</p>
+						</div>
+
+						<div class="status-badge">
+							<span class="status-dot"></span>
+							<span>Mapa activo</span>
+						</div>
+					</div>
+
+					<div class="map-wrapper">
+						<div class="map-floating-card">
+							<h4>Seguimiento en tiempo real</h4>
+							<p>Aquí podrás ver la ubicación del camión, la ruta y los puntos de referencia.</p>
+						</div>
+
+						<div class="layer-switcher">
+							<button class="layer-btn active" id="btnNormal" onclick="cambiarCapa('normal')">
+								<i class="fa-solid fa-map"></i>
+								<span>Mapa</span>
+							</button>
+
+							<button class="layer-btn" id="btnTopo" onclick="cambiarCapa('topo')">
+								<i class="fa-solid fa-mountain"></i>
+								<span>Topo</span>
+							</button>
+
+							<button class="layer-btn" id="btnSatelite" onclick="cambiarCapa('satelite')">
+								<i class="fa-solid fa-satellite"></i>
+								<span>Satélite</span>
+							</button>
+						</div>
+
+						<div class="route-switcher" id="routeSwitcher" aria-label="Rutas disponibles"></div>
+
+						<div id="map"></div>
+					</div>
+
+				</div>
+			</section>
+		</main>
+	</div>
+
+	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+	{{ nombres_rutas|json_script:"nombres-rutas-data" }}
+	{{ referencias|json_script:"referencias-data" }}
+
+	<script>
+		const map = L.map('map', {
+			zoomControl: true
+		}).setView([12.0137, -83.7635], 14);
+
+		const mapaNormal = L.tileLayer(
+			'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+			{
+				maxZoom: 19,
+				attribution: '&copy; OpenStreetMap'
+			}
+		);
+
+		const mapaTopo = L.tileLayer(
+			'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+			{
+				maxZoom: 17,
+				attribution: '&copy; OpenStreetMap contributors, OpenTopoMap'
+			}
+		);
+
+		const mapaSatelite = L.tileLayer(
+			'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+			{
+				maxZoom: 19,
+				attribution: 'Tiles &copy; Esri'
+			}
+		);
+
+		mapaNormal.addTo(map);
+
+		function limpiarCapasBase() {
+			if (map.hasLayer(mapaNormal)) map.removeLayer(mapaNormal);
+			if (map.hasLayer(mapaTopo)) map.removeLayer(mapaTopo);
+			if (map.hasLayer(mapaSatelite)) map.removeLayer(mapaSatelite);
+		}
+
+		function limpiarBotones() {
+			document.getElementById('btnNormal').classList.remove('active');
+			document.getElementById('btnTopo').classList.remove('active');
+			document.getElementById('btnSatelite').classList.remove('active');
+		}
+
+		function cambiarCapa(tipo) {
+			limpiarCapasBase();
+			limpiarBotones();
+
+			if (tipo === 'normal') {
+				mapaNormal.addTo(map);
+				document.getElementById('btnNormal').classList.add('active');
+			}
+
+			if (tipo === 'topo') {
+				mapaTopo.addTo(map);
+				document.getElementById('btnTopo').classList.add('active');
+			}
+
+			if (tipo === 'satelite') {
+				mapaSatelite.addTo(map);
+				document.getElementById('btnSatelite').classList.add('active');
+			}
+		}
+
+// ======================================================
+// RUTA ENTRE PUNTO A Y PUNTO B
+// ======================================================
+
+let puntoA = null;
+let puntoB = null;
+
+let marcadorA = null;
+let marcadorB = null;
+
+let lineaRuta = null;
+
+const referencias = JSON.parse(
+	document.getElementById('referencias-data').textContent
+);
+const nombresRutas = JSON.parse(
+	document.getElementById('nombres-rutas-data').textContent
+);
+
+const routeSwitcher = document.getElementById('routeSwitcher');
+let rutaActiva = 0;
+
+
+// ======================================================
+// CLIC SOBRE EL MAPA
+// ======================================================
+
+map.on('click', function(e) {
+
+	const lat = e.latlng.lat;
+	const lng = e.latlng.lng;
+
+
+	// PRIMER CLIC = PUNTO A
+	if (!puntoA) {
+
+		puntoA = [lat, lng];
+
+		marcadorA = L.marker(puntoA)
+			.addTo(map)
+			.bindPopup(`
+				<b>Punto A</b><br>
+				Inicio de la ruta
+			`)
+			.openPopup();
+
+		return;
+	}
+
+
+	// SEGUNDO CLIC = PUNTO B
+	if (!puntoB) {
+
+		puntoB = [lat, lng];
+
+		marcadorB = L.marker(puntoB)
+			.addTo(map)
+			.bindPopup(`
+				<b>Punto B</b><br>
+				Destino
+			`);
+
+		calcularRuta();
+
+		return;
+	}
+
+
+	// SI HACEMOS UN TERCER CLIC,
+	// SE BORRA LA RUTA ANTERIOR Y COMIENZA OTRA
+	limpiarRuta();
+
+	puntoA = [lat, lng];
+
+	marcadorA = L.marker(puntoA)
+		.addTo(map)
+		.bindPopup(`
+			<b>Punto A</b><br>
+			Inicio de la nueva ruta
+		`)
+		.openPopup();
+});
+
+
+// ======================================================
+// CALCULAR RUTA REAL POR LAS CALLES
+// ======================================================
+
+async function calcularRuta() {
+
+	const latA = puntoA[0];
+	const lngA = puntoA[1];
+
+	const latB = puntoB[0];
+	const lngB = puntoB[1];
+
+
+	// OSRM usa primero longitud y después latitud
+	const url =
+		`https://router.project-osrm.org/route/v1/driving/` +
+		`${lngA},${latA};${lngB},${latB}` +
+		`?overview=full&geometries=geojson`;
+
+
+	try {
+
+		const respuesta = await fetch(url);
+
+		if (!respuesta.ok) {
+			throw new Error("Error al consultar el servicio de rutas");
+		}
+
+		const datos = await respuesta.json();
+
+
+		if (!datos.routes || datos.routes.length === 0) {
+
+			alert("No se encontró una ruta entre esos puntos.");
+
+			return;
+		}
+
+
+		const ruta = datos.routes[0];
+
+
+		// ==================================================
+		// DIBUJAR RUTA
+		// ==================================================
+
+		lineaRuta = L.geoJSON(
+			ruta.geometry,
+			{
+				style: {
+					color: '#2563eb',
+					weight: 6,
+					opacity: 0.9
+				}
+			}
+		).addTo(map);
+
+
+		// Mostrar toda la ruta en pantalla
+		map.fitBounds(
+			lineaRuta.getBounds(),
+			{
+				padding: [50, 50]
+			}
+		);
+
+
+		// ==================================================
+		// DISTANCIA
+		// ==================================================
+
+		const distanciaKm =
+			(ruta.distance / 1000).toFixed(2);
+
+
+		// ==================================================
+		// TIEMPO ESTIMADO
+		// ==================================================
+
+		const tiempoMin =
+			Math.round(ruta.duration / 60);
+
+
+		// ==================================================
+		// MOSTRAR RESULTADO EN PUNTO B
+		// ==================================================
+
+		marcadorB
+			.bindPopup(`
+				<div style="
+					min-width: 190px;
+					font-family: Inter, sans-serif;
+				">
+
+					<div style="
+						font-size: 16px;
+						font-weight: 800;
+						margin-bottom: 10px;
+					">
+						Destino
+					</div>
+
+					<div style="margin-bottom: 6px;">
+						<i class="fa-solid fa-route"></i>
+						<strong>Distancia:</strong>
+						${distanciaKm} km
+					</div>
+
+					<div>
+						<i class="fa-solid fa-clock"></i>
+						<strong>Tiempo:</strong>
+						${tiempoMin} min
+					</div>
+
+				</div>
+			`)
+			.openPopup();
+
+
+	} catch (error) {
+
+		console.error(error);
+
+		alert("No fue posible calcular la ruta.");
+	}
+}
+
+
+// ======================================================
+// LIMPIAR RUTA
+// ======================================================
+
+function limpiarRuta() {
+
+	if (marcadorA) {
+		map.removeLayer(marcadorA);
+	}
+
+	if (marcadorB) {
+		map.removeLayer(marcadorB);
+	}
+
+	if (lineaRuta) {
+		map.removeLayer(lineaRuta);
+	}
+
+
+	puntoA = null;
+	puntoB = null;
+
+	marcadorA = null;
+	marcadorB = null;
+
+	lineaRuta = null;
+}
+
+function cargarReferencia(referencia) {
+	limpiarRuta();
+
+	puntoA = [referencia.inicio.lat, referencia.inicio.lng];
+	puntoB = [referencia.final.lat, referencia.final.lng];
+
+	marcadorA = L.marker(puntoA)
+		.addTo(map)
+		.bindPopup(`
+			<b>Punto A</b><br>
+			Inicio: ${referencia.nombre}
+		`);
+
+	marcadorB = L.marker(puntoB)
+		.addTo(map)
+		.bindPopup(`
+			<b>Punto B</b><br>
+			Final: ${referencia.nombre}
+		`);
+
+	calcularRuta();
+}
+
+function actualizarBotonRuta(indice) {
+	rutaActiva = indice;
+
+	document.querySelectorAll('.route-btn').forEach((boton, botonIndex) => {
+		boton.classList.toggle('active', botonIndex === indice);
+	});
+}
+
+function crearBotonesRutas() {
+	nombresRutas.forEach((ruta, indice) => {
+		const referencia = referencias[indice];
+		const boton = document.createElement('button');
+		boton.type = 'button';
+		boton.className = 'route-btn';
+		boton.title = referencia ? referencia.nombre : `${ruta.nombre} no tiene coordenadas`;
+		boton.innerHTML = `<i class="fa-solid fa-route"></i> ${ruta.nombre}`;
+
+		if (referencia) {
+			boton.addEventListener('click', () => {
+				actualizarBotonRuta(indice);
+				cargarReferencia(referencia);
+			});
+		} else {
+			boton.disabled = true;
+		}
+
+		routeSwitcher.appendChild(boton);
+	});
+}
+
+if (nombresRutas.length > 0) {
+	crearBotonesRutas();
+
+	if (referencias[rutaActiva]) {
+		actualizarBotonRuta(rutaActiva);
+		cargarReferencia(referencias[rutaActiva]);
+	}
+}
+
+
+
+
+	</script>
+</body>
+</html>

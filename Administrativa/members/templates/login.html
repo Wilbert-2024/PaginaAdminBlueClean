@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso | Sistema de Aseo Urbano</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/login.css">
+</head>
+<body>
+    <aside class="panel-left">
+        <div class="brand-container">
+            <div class="brand-logo">
+                <i class="fas fa-truck"></i>
+            </div>
+            <div class="brand-text">
+                <h2>Alcaldía Municipal</h2>
+                <p>Gestión de Aseo Urbano</p>
+            </div>
+        </div>
+
+        <div class="hero-text">
+            <h1>Una ciudad más limpia,<br>una gestión más inteligente.</h1>
+            <p>Administra rutas, camiones e incidencias desde un solo lugar.</p>
+
+            <div class="map-scene" aria-hidden="true">
+                <span class="route route-1"></span>
+                <span class="route route-2"></span>
+                <span class="route route-3"></span>
+                <span class="route route-4"></span>
+                <span class="node node-1"></span>
+                <span class="node node-2"></span>
+                <span class="node node-3"></span>
+                <span class="node node-4"></span>
+                <span class="node node-5"></span>
+                <span class="truck-icon"><i class="fas fa-truck"></i></span>
+            </div>
+        </div>
+
+        <div class="footer-left">
+            <span class="shield"><i class="fas fa-shield-alt"></i></span>
+            Acceso exclusivo para personal autorizado.
+        </div>
+    </aside>
+
+    <main class="panel-right">
+        <div class="login-container">
+            <div class="login-header">
+                <span class="mini-badge">Panel administrativo</span>
+                <h2>Bienvenido de nuevo</h2>
+                <p>Ingresa tus credenciales para continuar.</p>
+            </div>
+
+            <form id="formularioLogin" novalidate>
+                <div class="form-group">
+                    <label for="email" class="form-label">Correo institucional</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-user input-icon"></i>
+                        <input type="email" id="email" class="form-input" value="nombre@alcaldia.gob.ni" placeholder="nombre@alcaldia.gob.ni" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password" class="form-label">Contraseña</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock input-icon"></i>
+                        <input type="password" id="password" class="form-input" placeholder="••••••••••••" required>
+                        <button type="button" class="toggle-password" aria-label="Mostrar contraseña" id="togglePassword">
+                            <i class="fas fa-eye" id="eye-icon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-options">
+                    <label class="checkbox-wrapper" for="remember">
+                        <input type="checkbox" id="remember">
+                        <span>Recordar sesión</span>
+                    </label>
+                    <a href="#" class="forgot-link">¿Olvidaste tu contraseña?</a>
+                </div>
+
+                <button type="submit" class="btn-primary">Iniciar sesión <span>→</span></button>
+                <p id="mensaje" class="mensaje" aria-live="polite"></p>
+            </form>
+
+            <div class="login-footer">
+                <span class="headset"><i class="fas fa-headset"></i></span>
+                <span>¿Problemas para ingresar?</span>
+                <a href="#">Contacta a soporte técnico</a>
+                <span>→</span>
+            </div>
+        </div>
+    </main>
+
+    <script type="module" src="/static/js/login.js"></script>
+    
+</body>
+</html>

@@ -1,0 +1,32 @@
+<aside class="sidebar" aria-label="Menú principal">
+    <div class="brand">
+        <div class="brand-mark"><i class="fas fa-landmark" aria-hidden="true"></i></div>
+        <div>
+            <h3>Municipio</h3>
+            <small>Gestión urbana</small>
+        </div>
+        <button class="menu-toggle" type="button" aria-controls="primaryNavigation" aria-expanded="false" aria-label="Abrir menú de navegación">
+            <i class="fas fa-bars" aria-hidden="true"></i>
+        </button>
+    </div>
+
+    <div class="sidebar-content" id="primaryNavigation">
+        <div class="nav-section">
+            <div class="nav-label">Navegación</div>
+            <nav class="nav-links" aria-label="Navegación principal">
+                <a class="nav-item{% if active_nav == 'dashboard' %} active{% endif %}" href="{% url 'dashboard' %}"><i class="fas fa-house" aria-hidden="true"></i> Inicio</a>
+                <a class="nav-item{% if active_nav == 'Mapa' %} active{% endif %}" href="{% url 'Mapa' %}"><i class="fas fa-map" aria-hidden="true"></i> Mapa</a>
+                <a class="nav-item" href="#"><i class="fas fa-truck" aria-hidden="true"></i> Flota</a>
+                <a class="nav-item" href="#"><i class="fas fa-route" aria-hidden="true"></i> Rutas</a>
+                <a class="nav-item" href="#"><i class="fas fa-chart-column" aria-hidden="true"></i> Reportes</a>
+                <a class="nav-item" href="#"><i class="fas fa-users" aria-hidden="true"></i> Personal</a>
+                <a class="nav-item{% if active_nav == 'notifications' %} active{% endif %}" href="{% url 'notifications' %}"><i class="fas fa-bell" aria-hidden="true"></i> Enviar notificaciones</a>
+            </nav>
+        </div>
+
+        <div class="sidebar-footer">
+            <strong>Operación central</strong>
+            <span>Estado: activo · 03 supervisores</span>
+        </div>
+    </div>
+</aside>

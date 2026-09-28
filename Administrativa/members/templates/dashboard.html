@@ -1,0 +1,135 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Alcaldía</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/menuNavegacion.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <script src="{% static 'js/menuNavegacion.js' %}" defer></script>
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+</head>
+<body>
+    <div class="dashboard-shell">
+        {% include 'MenuNavegacion' %}
+
+        <main class="content">
+            <header class="topbar">
+                <h2>Panel de control</h2>
+                <div class="topbar-right">
+                    <div class="chip"><i class="fas fa-circle"></i> Sistema en línea</div>
+                    <button class="notification-button" id="activarNotificaciones" type="button" title="Activar notificaciones" aria-label="Activar notificaciones">
+                        <i class="fas fa-bell"></i>
+                    </button>
+                    <div class="avatar">AM</div>
+                </div>
+            </header>
+
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <div class="label">Rutas <span class="dot green"></span></div>
+                    <strong>128</strong>
+                    <span>Asignadas hoy</span>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Camiones <span class="dot yellow"></span></div>
+                    <strong>42</strong>
+                    <span>En operación</span>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Cobertura <span class="dot green"></span></div>
+                    <strong>97%</strong>
+                    <span>Ciudad atendida</span>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Alertas <span class="dot red"></span></div>
+                    <strong>06</strong>
+                    <span>Requieren atención</span>
+                </div>
+            </section>
+
+            <section class="main-grid">
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>Rutas de recolección</h3>
+                        <span class="badge">Hoy</span>
+                    </div>
+
+                    <table class="routes-table">
+                        <thead>
+                            <tr>
+                                <th>Zona</th>
+                                <th>Vehículo</th>
+                                <th>Tiempo</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Centro histórico</td>
+                                <td>Camión 03</td>
+                                <td>08:40</td>
+                                <td><span class="status ok">Activo</span></td>
+                            </tr>
+                            <tr>
+                                <td>San Martín</td>
+                                <td>Camión 07</td>
+                                <td>09:10</td>
+                                <td><span class="status warn">En pausa</span></td>
+                            </tr>
+                            <tr>
+                                <td>Las Flores</td>
+                                <td>Camión 12</td>
+                                <td>09:35</td>
+                                <td><span class="status ok">Activo</span></td>
+                            </tr>
+                            <tr>
+                                <td>La Estación</td>
+                                <td>Camión 05</td>
+                                <td>10:05</td>
+                                <td><span class="status alert">Revisión</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <h3>Seguimiento</h3>
+                        <span class="badge">Urgente</span>
+                    </div>
+
+                    <div class="mini-list">
+                        <div class="task-item">
+                            <div>
+                                <strong>Mantenimiento</strong>
+                                <span>Camión 05 · taller</span>
+                            </div>
+                            <span class="task-tag">2h</span>
+                        </div>
+                        <div class="task-item">
+                            <div>
+                                <strong>Ruta alternativa</strong>
+                                <span>Zona Norte · por lluvia</span>
+                            </div>
+                            <span class="task-tag">Hoy</span>
+                        </div>
+                        <div class="task-item">
+                            <div>
+                                <strong>Inventario</strong>
+                                <span>Contenedores · revisión</span>
+                            </div>
+                            <span class="task-tag">OK</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+    <script type="module" src="{% static 'js/fcm.js' %}"></script>
+</body>
+</html>

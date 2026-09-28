@@ -1,0 +1,253 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enviar notificaciones | Municipio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/menuNavegacion.css' %}">
+    <link rel="stylesheet" href="{% static 'css/notificaciones.css' %}?v=20260925-5">
+    <script src="{% static 'js/menuNavegacion.js' %}" defer></script>
+    <script src="{% static 'js/notificaciones-preview.js' %}?v=20260925-5" defer></script>
+</head>
+<body>
+    <div class="dashboard-shell">
+        {% include 'MenuNavegacion' %}
+
+        <main class="content">
+            <header class="topbar">
+                <div class="page-heading">
+                    <h1>Enviar notificaciones</h1>
+                    <p>Mantén informados a los usuarios del servicio de recolección.</p>
+                </div>
+                <div class="topbar-right">
+                    <div class="chip"><i class="fas fa-circle" aria-hidden="true"></i> Sistema en línea</div>
+                    <button class="notification-button" id="activarNotificaciones" type="button" title="Activar notificaciones" aria-label="Activar notificaciones">
+                        <i class="fas fa-bell" aria-hidden="true"></i>
+                    </button>
+                    <div class="user-mark" aria-label="Usuario administrador">M</div>
+                </div>
+            </header>
+
+            <div class="notification-layout">
+                <section class="notification-card compose-card" aria-labelledby="composeHeading">
+                    <header class="card-heading">
+                        <div class="heading-icon"><i class="fas fa-bullhorn" aria-hidden="true"></i></div>
+                        <div class="heading-copy">
+                            <h2 id="composeHeading">Nuevo aviso</h2>
+                            <p>Crea y envía una notificación a los usuarios de la app.</p>
+                        </div>
+                        <div class="firebase-status"><i class="fas fa-wifi" aria-hidden="true"></i> Firebase conectado</div>
+                    </header>
+
+                    <form class="notification-form" id="formularioNotificacion">
+                        {% csrf_token %}
+                        <label class="field" for="notificationMode">
+                            <span class="field-label">Destinatario</span>
+                            <span class="select-wrap">
+                                <i class="fas fa-users" aria-hidden="true"></i>
+                                <select id="notificationMode" required>
+                                    <option value="" selected disabled>Selecciona destino</option>
+                                    <option value="all">Todos los usuarios</option>
+                                    {% if rutas_notificaciones %}
+                                        <option value="route">Por ruta</option>
+                                    {% endif %}
+                                    {% if usuarios_notificaciones %}
+                                        <option value="user">Por usuario</option>
+                                    {% endif %}
+                                </select>
+                            </span>
+                        </label>
+
+                        <label class="field target-field" id="routeTargetField" for="notificationRoute" hidden>
+                            <span class="field-label">Ruta</span>
+                            <span class="select-wrap">
+                                <i class="fas fa-route" aria-hidden="true"></i>
+                                <select id="notificationRoute">
+                                    <option value="" selected disabled>Selecciona ruta</option>
+                                    {% for ruta in rutas_notificaciones %}
+                                        <option value="{{ ruta }}">{{ ruta }}</option>
+                                    {% endfor %}
+                                </select>
+                            </span>
+                        </label>
+
+                        <label class="field target-field" id="userTargetField" for="notificationUser" hidden>
+                            <span class="field-label">Usuario</span>
+                            <span class="select-wrap">
+                                <i class="fas fa-user" aria-hidden="true"></i>
+                                <select id="notificationUser">
+                                    <option value="" selected disabled>Selecciona usuario</option>
+                                    {% for usuario in usuarios_notificaciones %}
+                                        <option value="{{ usuario }}">{{ usuario }}</option>
+                                    {% endfor %}
+                                </select>
+                            </span>
+                        </label>
+                        <input id="notificationRecipient" name="recipient" type="hidden" value="">
+                        <p class="device-recipient-note" hidden aria-live="polite">
+                            <i class="fas fa-users" aria-hidden="true"></i>
+                            <span id="recipientDeviceMessage">Selecciona un destino para ver los dispositivos.</span>
+                        </p>
+
+                        <label class="field" for="notificationType">
+                            <span class="field-label">Tipo de aviso</span>
+                            <span class="select-wrap">
+                                <i class="fas fa-tag" aria-hidden="true"></i>
+                                <select id="notificationType" name="notification_type" required>
+                                    <option value="" selected disabled>Selecciona tipo de aviso</option>
+                                    <option value="alerta">Alerta</option>
+                                    <option value="novedades">Novedades</option>
+                                    <option value="emergencia">Emergencia</option>
+                                </select>
+                            </span>
+                        </label>
+
+                        <label class="field" for="notificationTitle">
+                            <span class="field-label">Título</span>
+                            <span class="input-wrap">
+                                <input id="notificationTitle" name="title" type="text" maxlength="100" placeholder="Ej. Cambio de ruta mañana" required>
+                                <span class="character-count" id="titleCounter">0/100</span>
+                            </span>
+                        </label>
+
+                        <label class="field" for="notificationBody">
+                            <span class="field-label">Mensaje</span>
+                            <span class="input-wrap textarea-wrap">
+                                <textarea id="notificationBody" name="body" maxlength="500" placeholder="Escribe el aviso para los usuarios..." required></textarea>
+                                <span class="character-count" id="bodyCounter">0/500</span>
+                            </span>
+                        </label>
+
+                        <button class="notification-submit" type="submit">
+                            <i class="fas fa-paper-plane submit-icon" aria-hidden="true"></i>
+                            <i class="fas fa-spinner submit-spinner" aria-hidden="true" hidden></i>
+                            <span class="submit-label">Enviar notificación</span>
+                        </button>
+                        <p class="notification-status" id="estadoNotificacion" aria-live="polite"></p>
+                    </form>
+                </section>
+
+                <section class="preview-column" aria-labelledby="previewHeading">
+                    <div class="notification-card preview-card">
+                        <header class="preview-heading">
+                            <div class="preview-heading-icon"><i class="fas fa-eye" aria-hidden="true"></i></div>
+                            <div>
+                                <h2 id="previewHeading">Vista previa en tiempo real <span class="online-dot" aria-label="Activa"></span></h2>
+                                <p>Así verá la notificación el usuario en su dispositivo.</p>
+                            </div>
+                        </header>
+
+                        <div class="phone-stage">
+                            <div class="phone-shell" aria-label="Vista previa de notificación en un teléfono">
+                                <div class="phone-screen">
+                                    <div class="phone-notch" aria-hidden="true"></div>
+                                    <div class="phone-statusbar" aria-hidden="true">
+                                        <span id="phoneStatusTime">--:--</span>
+                                        <span class="phone-status-icons"><i class="fas fa-signal"></i><i class="fas fa-wifi"></i><i class="fas fa-battery-three-quarters"></i></span>
+                                    </div>
+                                    <div class="phone-wallpaper">
+                                        <span class="phone-date" id="phoneDate">Sincronizando hora de Internet...</span>
+                                        <span class="phone-clock" id="phoneClock">--:--</span>
+                                        <span class="phone-unlock-hint">Desliza hacia arriba para abrir</span>
+                                    </div>
+                                    <article class="push-notification" hidden aria-live="polite">
+                                        <div class="app-icon"><i class="fas fa-landmark" aria-hidden="true"></i></div>
+                                        <div class="push-copy">
+                                            <div class="push-app-row"><strong>Municipio</strong><span>ahora</span></div>
+                                            <span class="push-type-indicator type-other" id="previewTypeBadge" hidden>
+                                                <i class="fas fa-tag" id="previewTypeIcon" aria-hidden="true"></i>
+                                                <span id="previewTypeLabel">Selecciona tipo de aviso</span>
+                                            </span>
+                                            <strong class="push-title" id="previewTitle"></strong>
+                                            <p class="push-message" id="previewBody"></p>
+                                        </div>
+                                    </article>
+                                    <div class="phone-home-indicator" aria-hidden="true"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <section class="send-summary" hidden aria-labelledby="summaryHeading">
+                            <h3 id="summaryHeading"><i class="fas fa-chart-column" aria-hidden="true"></i> Resumen del envío</h3>
+                            <div class="summary-row">
+                                <span><i class="fas fa-user" aria-hidden="true"></i> Destino</span>
+                                <strong id="summaryRecipient">Selecciona destino</strong>
+                            </div>
+                            <div class="summary-row">
+                                <span><i class="fas fa-tag type-icon-other" id="summaryTypeIcon" aria-hidden="true"></i> Tipo de aviso</span>
+                                <strong id="summaryType">Selecciona tipo de aviso</strong>
+                            </div>
+                            <div class="summary-row">
+                                <span><i class="fas fa-mobile-screen-button" aria-hidden="true"></i> Dispositivos</span>
+                                <strong id="summaryDevices">0 suscritos</strong>
+                            </div>
+                        </section>
+                    </div>
+                </section>
+            </div>
+
+            <section class="history-card" aria-labelledby="historyHeading">
+                <header class="history-heading">
+                    <div>
+                        <h2 id="historyHeading"><i class="fas fa-clock-rotate-left" aria-hidden="true"></i> Notificaciones recientes</h2>
+                        <p>Historial de los últimos avisos enviados.</p>
+                    </div>
+                    <button class="history-toggle" id="toggleNotificationHistory" type="button" aria-expanded="false" hidden>
+                        <span>Ver todos</span><i class="fas fa-chevron-right" aria-hidden="true"></i>
+                    </button>
+                </header>
+
+                <div class="history-table-wrap">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Fecha</th>
+                                <th scope="col">Destinatario</th>
+                                <th scope="col">Título</th>
+                                <th scope="col">Tipo de aviso</th>
+                                <th scope="col">Canal</th>
+                                <th scope="col">Estado</th>
+                                <th scope="col">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="notificationHistoryBody">
+                            {% for aviso in historial_notificaciones %}
+                                <tr class="history-entry" data-history-entry>
+                                    <td><time datetime="{{ aviso.sent_at_iso }}">{{ aviso.sent_at_label }}</time></td>
+                                    <td>{{ aviso.recipient_label }}</td>
+                                    <td class="history-title" title="{{ aviso.title }}">{{ aviso.title }}</td>
+                                    <td><span class="history-type {{ aviso.notification_type_class }}"><i class="fas {{ aviso.notification_type_icon }}" aria-hidden="true"></i>{{ aviso.notification_type_label }}</span></td>
+                                    <td><span class="history-channel"><i class="fas fa-mobile-screen-button" aria-hidden="true"></i>{{ aviso.channel }}</span></td>
+                                    <td><span class="history-status status-{{ aviso.status_class }}"><i aria-hidden="true"></i>{{ aviso.status }}</span></td>
+                                    <td><button class="history-action" type="button" data-history-message aria-label="Ver mensaje: {{ aviso.title }}" aria-expanded="false"><i class="fas fa-ellipsis" aria-hidden="true"></i></button></td>
+                                </tr>
+                                <tr class="history-message-row" hidden>
+                                    <td colspan="7"><strong>Mensaje:</strong> {{ aviso.message }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr class="history-empty"><td colspan="7">Todavía no se han enviado notificaciones.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+    <div class="send-feedback-overlay" id="sendFeedback" hidden aria-hidden="true">
+        <section class="send-feedback-dialog" id="sendFeedbackDialog" role="dialog" aria-modal="true" aria-labelledby="sendFeedbackTitle" aria-describedby="sendFeedbackMessage" tabindex="-1">
+            <div class="send-feedback-symbol" id="sendFeedbackSymbol" aria-hidden="true">
+                <i class="fas fa-spinner feedback-spinner"></i>
+            </div>
+            <h2 id="sendFeedbackTitle">Enviando notificación</h2>
+            <p id="sendFeedbackMessage" aria-live="polite">Estamos enviando el aviso a los dispositivos seleccionados.</p>
+            <button class="send-feedback-close" id="closeSendFeedback" type="button" hidden>Listo</button>
+        </section>
+    </div>
+    {{ dispositivos_por_destinatario|json_script:"notificationDeviceCounts" }}
+    <script src="{% static 'js/notificaciones-historial.js' %}?v=20260925-3" defer></script>
+    <script type="module" src="{% static 'js/fcm.js' %}?v=20260925-2"></script>
+</body>
+</html>
